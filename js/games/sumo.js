@@ -169,7 +169,7 @@ export default {
     let token = 0;
     let ev = {};
     const later = (ms, fn) => { const k = token; api.after(ms, () => { if (k === token) fn(); }); };
-    const rMin = Math.min(0.8, RMIN + 0.05 * (n - 2));
+    const rMin = RMIN + 0.05 * (n - 2); // 0.45 for 2 players … 0.75 for 8
 
     const newRound = () => {
       token++;

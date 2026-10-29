@@ -187,7 +187,7 @@ export default {
       const hotPick = cur.picks[cur.hot] ?? null;
       if (hotPick != null) {
         for (const id of ids) if (id !== cur.hot && cur.picks[id] === hotPick) scores[id] += 100;
-        // The hot seat scores when they're predictable: reward honesty.
+        // The hot seat also scores for every friend who read them correctly.
         const right = ids.filter((id) => id !== cur.hot && cur.picks[id] === hotPick).length;
         scores[cur.hot] += right * 40;
       }
