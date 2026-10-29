@@ -214,6 +214,11 @@ $('#gameGrid').onclick = (e) => {
   if (!b || !room) return;
   const g = GAMES[b.dataset.g];
   if (room.players.length < g.min) { toast(`Need ${g.min}+ players. Invite your friend! 📤`); sfx.wrong(); return; }
+  if (room.game) {
+    const running = GAMES[room.game.id];
+    toast(`⏳ ${running ? running.title : 'A game'} is in progress — you're in the next one!`);
+    return;
+  }
   sfx.click();
   room.send({ t: 'start', game: g.id });
 };
