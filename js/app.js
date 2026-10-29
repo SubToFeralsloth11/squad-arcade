@@ -68,13 +68,13 @@ $('#diceBtn').onclick = () => { profile.name = randomName(); saveProfile(profile
 $('#muteBtn').onclick = () => { setMuted(!isMuted()); renderProfile(); sfx.click(); };
 
 // ---------------------------------------------------------------- toasts/floaters
-export function toast(html, ms = 2600) {
+function toast(html, ms = 2600) {
   const t = document.createElement('div');
   t.className = 'toast';
   t.innerHTML = html;
   $('#toasts').append(t);
   setTimeout(() => t.remove(), ms);
-  while ($('#toasts').children.length > 4) $('#toasts').firstChild.remove();
+  while ($('#toasts').children.length > 4) $('#toasts').firstElementChild.remove();
 }
 
 function floatEmoji(e, label) {
@@ -125,7 +125,11 @@ async function enterRoom(action) {
 $('#createBtn').onclick = () => enterRoom('host');
 $('#joinBtn').onclick = () => enterRoom('join');
 $('#codeInput').onkeydown = (e) => { if (e.key === 'Enter') enterRoom('join'); };
-$('#codeInput').oninput = (e) => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); };
+$('#codeInput').oninput = (e) => {
+  // Codes never contain 0/O/1/I/L, so drop anything that can't be in one.
+  const v = e.target.value.toUpperCase().replace(/[^ABCDEFGHJKMNPQRSTUVWXYZ2-9]/g, '');
+  if (v !== e.target.value) e.target.value = v;
+};
 
 function exitRoom(msg) {
   endGame();
@@ -144,14 +148,14 @@ function exitRoom(msg) {
   renderProfile();
 }
 
-$('#leaveBtn').onclick = () => { if (confirm('Leave the room?')) exitRoom(); };
+$('#leaveBtn').onclick = async () => { if (await askConfirm('Leave the room?')) exitRoom(); };
 
 async function shareInvite() {
   const url = `${location.origin}${location.pathname}?room=${room.code}`;
   const text = `Join my Squad Arcade room! Code: ${room.code}`;
   try {
     if (navigator.share) { await navigator.share({ title: 'Squad Arcade', text, url }); return; }
-  } catch { /* share sheet dismissed */ return; }
+  } catch (e) { if (e.name === 'AbortError') return; }
   try { await navigator.clipboard.writeText(`${text} ${url}`); toast('📋 Invite link copied!'); } catch { toast(`Code: <b>${room.code}</b>`); }
 }
 $('#shareBtn').onclick = shareInvite;
@@ -187,7 +191,7 @@ function wireRoom() {
 function renderLobby() {
   if (!room) return;
   const strip = room.players.map((p) =>
-    `<button class="pchip avatar" data-id="${p.id}" style="border-color:${p.color}" title="${esc(p.name)}">${esc(p.avatar)}${p.voice ? '<span class="mic">🎙️</span>' : ''}</button>`).join('');
+    `<button class="pchip avatar" data-id="${esc(p.id)}" style="border-color:${p.color}" title="${esc(p.name)}">${esc(p.avatar)}${p.voice ? '<span class="mic">🎙️</span>' : ''}</button>`).join('');
   $('#playerStrip').innerHTML = strip;
   if (voice) document.querySelectorAll('.pchip').forEach((el) => el.classList.toggle('speaking', voice.speaking.has(el.dataset.id)));
   $('#inviteCard').classList.toggle('hidden', room.players.length > 1);
@@ -226,7 +230,7 @@ function appendChat(el) {
   const log = $('#chatLog');
   const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
   log.append(el);
-  while (log.children.length > 200) log.firstChild.remove();
+  while (log.children.length > 200) log.firstElementChild.remove();
   if (atBottom) log.scrollTop = log.scrollHeight;
 }
 
@@ -376,7 +380,18 @@ function endGame() {
   $('#quitGameBtn').classList.add('hidden');
 }
 
-$('#quitGameBtn').onclick = () => { if (confirm('End this game for everyone?')) room?.send({ t: 'quit' }); };
+$('#quitGameBtn').onclick = async () => { if (await askConfirm('End this game for everyone?')) room?.send({ t: 'quit' }); };
+
+// In-page confirm: window.confirm() is silently blocked in many in-app browsers.
+function askConfirm(text) {
+  return new Promise((resolve) => {
+    $('#confirmText').textContent = text;
+    $('#confirm').classList.remove('hidden');
+    const done = (v) => { $('#confirm').classList.add('hidden'); resolve(v); };
+    $('#confirmYes').onclick = () => done(true);
+    $('#confirmNo').onclick = () => done(false);
+  });
+}
 
 function showResult(m) {
   const wasPlaying = current && !current.api.spectator;
@@ -424,3 +439,5 @@ if (qp) {
 }
 renderProfile();
 window.addEventListener('beforeunload', () => room?.leave());
+// iOS keeps an AudioContext suspended until a tap; resume it on any touch.
+window.addEventListener('pointerdown', () => audioContext(), { passive: true });

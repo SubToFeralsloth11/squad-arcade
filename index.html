@@ -121,7 +121,16 @@
 
   <div id="floaters"></div>
   <div id="toasts"></div>
-  <div id="audioSinks" hidden></div>
+  <div id="audioSinks" aria-hidden="true"></div>
+  <div id="confirm" class="modal hidden">
+    <div class="modalcard">
+      <h2 id="confirmText">Sure?</h2>
+      <div class="modalbtns">
+        <button id="confirmYes" class="btn primary">Yes</button>
+        <button id="confirmNo" class="btn secondary">Nah</button>
+      </div>
+    </div>
+  </div>
   <button id="audioUnlock" class="unlock hidden">🔈 Tap to hear voice chat</button>
 </div>
 

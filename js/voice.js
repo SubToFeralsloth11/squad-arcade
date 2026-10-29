@@ -118,6 +118,7 @@ export class Voice {
     if (!s) return;
     s.audio.srcObject = null;
     s.audio.remove();
+    s.analyser?.src.disconnect();
     this.sinks.delete(id);
   }
 
@@ -128,7 +129,7 @@ export class Voice {
       const an = ctx.createAnalyser();
       an.fftSize = 512;
       src.connect(an);
-      return { an, buf: new Uint8Array(an.fftSize) };
+      return { an, src, buf: new Uint8Array(an.fftSize) };
     } catch { return null; }
   }
 

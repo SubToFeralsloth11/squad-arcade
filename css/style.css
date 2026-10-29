@@ -230,3 +230,6 @@ h3.pick { margin: 4px 4px 0; color: var(--muted); }
 .mr .timer i { display: block; height: 100%; background: var(--yellow); }
 .mr .who { text-align: center; font-size: 16px; color: var(--muted); }
 .mr .pickers { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: 30px; }
+
+/* Visually hidden but rendered: iOS won't play <audio> inside display:none. */
+#audioSinks { position: fixed; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; left: 0; top: 0; }

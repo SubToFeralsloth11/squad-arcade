@@ -11,6 +11,7 @@ export const MAX_PLAYERS = 8;
 const PING_MS = 3000;
 const DEAD_MS = 25000;
 const PEER_OPTS = { debug: 1 };
+const SOCIAL = new Set(['chat', 'react', 'sb', 'voice', 'me']);
 
 const randomCode = () => Array.from({ length: 5 }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join('');
 const clean = (s, n) => String(s ?? '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, n);
@@ -30,6 +31,7 @@ export class Room {
     this.hostConn = null;       // guest: connection to host
     this.lastSeen = new Map();
     this.gameSeq = 0;
+    this.buckets = new Map();   // host: per-player social message rate limit
     this.timer = null;
   }
 
@@ -218,6 +220,7 @@ export class Room {
     if (!conn) return;
     this.conns.delete(id);
     this.lastSeen.delete(id);
+    this.buckets.delete(id);
     try { conn.close(); } catch { /* ignore */ }
     const p = this.player(id);
     this.players = this.players.filter((x) => x.id !== id);
@@ -233,10 +236,23 @@ export class Room {
     this.broadcast({ t: 'lobby', players: this.players, game: this.game });
   }
 
+  // Token bucket for chat/reactions/sounds so one spammy phone can't flood everyone.
+  _allow(id) {
+    const now = Date.now();
+    const b = this.buckets.get(id) || { tokens: 8, at: now };
+    b.tokens = Math.min(8, b.tokens + ((now - b.at) / 1000) * 3);
+    b.at = now;
+    this.buckets.set(id, b);
+    if (b.tokens < 1) return false;
+    b.tokens -= 1;
+    return true;
+  }
+
   _hostHandle(from, m) {
     if (!m || typeof m.t !== 'string') return;
     const p = this.player(from);
     if (!p) return;
+    if (SOCIAL.has(m.t) && !this._allow(from)) return;
     switch (m.t) {
       case 'chat': {
         const text = clean(m.text, 200);
@@ -279,7 +295,7 @@ export class Room {
         break;
       case 'over': {
         if (from !== this.id || !this.game) break;
-        const winners = (m.winners || []).filter((id) => this.game.players.includes(id));
+        const winners = [...new Set(m.winners || [])].filter((id) => this.game.players.includes(id));
         for (const id of winners) { const w = this.player(id); if (w) w.score++; }
         const game = this.game;
         this.game = null;
