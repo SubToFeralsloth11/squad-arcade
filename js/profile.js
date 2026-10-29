@@ -40,7 +40,8 @@ export function levelInfo(totalXp) {
 const today = () => new Date().toISOString().slice(0, 10);
 
 function fresh() {
-  return { name: randomName(), avatar: '🐸', xp: 0, streak: 0, lastPlayDay: null, games: {}, rivals: {} };
+  const starters = unlockedAvatars(1);
+  return { name: randomName(), avatar: starters[Math.floor(Math.random() * starters.length)], xp: 0, streak: 0, lastPlayDay: null, games: {}, rivals: {} };
 }
 
 export function loadProfile() {

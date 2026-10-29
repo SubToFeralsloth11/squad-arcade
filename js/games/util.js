@@ -75,5 +75,6 @@ export function emoji(ctx, e, x, y, size) {
   ctx.font = `${size}px system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#000'; // colour emoji still take fillStyle's alpha
   ctx.fillText(e, x, y);
 }
