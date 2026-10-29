@@ -47,6 +47,9 @@ record against every friend you've played. Saved in your browser.
   leaves, the room closes.
 - Voice chat is a mesh of WebRTC audio calls between everyone in the room (`js/voice.js`).
 - All sound effects are synthesised live with WebAudio (`js/sfx.js`).
+- Room codes are 5 characters (about 33 million combinations) on PeerJS' public
+  broker, and anyone with the code can join while the room is open. Rooms only exist
+  while the host's tab is open and hold at most 8 players.
 
 ### Code map
 
@@ -57,9 +60,6 @@ js/app.js           UI controller, chat/reactions/soundboard, game runner, resul
 js/net.js           Room: host/join, message routing, validation, rate limits
 js/voice.js         voice chat mesh + speaking indicators
 js/profile.js       name/avatar, XP, levels, unlocks, stats
-- Room codes are 5 characters (about 33 million combinations) on PeerJS' public
-  broker, and anyone with the code can join while the room is open. Rooms only exist
-  while the host's tab is open and hold at most 8 players.
 js/sfx.js           synthesised sounds + soundboard list
 js/games/*.js       one module per game; see "Adding a game"
 ```
