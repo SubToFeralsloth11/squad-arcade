@@ -151,7 +151,9 @@ function exitRoom(msg) {
 $('#leaveBtn').onclick = async () => { if (await askConfirm('Leave the room?')) exitRoom(); };
 
 async function shareInvite() {
-  const url = `${location.origin}${location.pathname}?room=${room.code}`;
+  // Opened from a file? A file:// link is useless to a friend, so invite them to the live site.
+  const base = location.protocol === 'file:' ? 'https://subtoferalsloth11.github.io/squad-arcade/' : `${location.origin}${location.pathname}`;
+  const url = `${base}?room=${room.code}`;
   const text = `Join my Squad Arcade room! Code: ${room.code}`;
   try {
     if (navigator.share) { await navigator.share({ title: 'Squad Arcade', text, url }); return; }
