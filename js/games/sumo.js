@@ -3,7 +3,7 @@
 import { h, makeCanvas, header, leaders, emoji } from './util.js';
 
 const R0 = 1;           // starting arena radius
-const RMIN = 0.45;
+const RMIN = 0.45;     // final arena radius for 2 players; grows with the crowd
 const SHRINK_S = 40;    // seconds to shrink from R0 to RMIN
 const BR = 0.11;        // bumper radius
 const ACCEL = 3.2;
@@ -73,7 +73,7 @@ export default {
       api.sfx.swoosh();
     };
     api.listen(dashBtn, 'pointerdown', dash);
-    api.listen(window, 'keydown', (e) => { if (e.code === 'Space') dash(e); });
+    api.listen(window, 'keydown', (e) => { if (e.code === 'Space' && !e.repeat) dash(e); });
 
     api.loop(() => {
       const { ctx } = view;
@@ -169,6 +169,7 @@ export default {
     let token = 0;
     let ev = {};
     const later = (ms, fn) => { const k = token; api.after(ms, () => { if (k === token) fn(); }); };
+    const rMin = Math.min(0.8, RMIN + 0.05 * (n - 2));
 
     const newRound = () => {
       token++;
@@ -210,7 +211,7 @@ export default {
     api.every(16, () => {
       if (!live) return;
       const t = (performance.now() - startAt) / 1000;
-      R = Math.max(RMIN, R0 - (R0 - RMIN) * Math.min(1, t / SHRINK_S));
+      R = Math.max(rMin, R0 - (R0 - rMin) * Math.min(1, t / SHRINK_S));
       for (const o of b) {
         if (!o.alive) continue;
         o.vx += o.ax * ACCEL * DT; o.vy += o.ay * ACCEL * DT;
