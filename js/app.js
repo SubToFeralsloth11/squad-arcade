@@ -272,6 +272,7 @@ function closeDrawers() { for (const d of DRAWERS) $(`#${d}`).classList.add('hid
 function toggleDrawer(id) {
   const open = $(`#${id}`).classList.contains('hidden');
   closeDrawers();
+  $('#room').style.setProperty('--dock-h', `${$('.dock').offsetHeight}px`);
   if (open) $(`#${id}`).classList.remove('hidden');
   if (id === 'chatDrawer' && open) {
     unread = 0;

@@ -95,7 +95,7 @@ h3.pick { margin: 4px 4px 0; color: var(--muted); }
 .gcard .gm { font-size: 11px; opacity: .85; display: flex; justify-content: space-between; }
 .gcard.disabled { filter: saturate(.3) brightness(.7); }
 
-.dock { display: flex; justify-content: space-around; padding: 6px 6px calc(6px + var(--safe-b)); background: #0005; border-top: 1px solid var(--line); }
+.dock { display: flex; justify-content: space-around; padding: 6px 6px calc(6px + var(--safe-b)); background: #17133a; border-top: 1px solid var(--line); position: relative; z-index: 35; }
 .dockbtn { display: flex; flex-direction: column; align-items: center; font-size: 24px; padding: 4px 10px; border-radius: 14px; position: relative; min-width: 62px; }
 .dockbtn span { font-size: 11px; color: var(--muted); }
 .dockbtn.live { background: #51cf6633; }
@@ -104,7 +104,8 @@ h3.pick { margin: 4px 4px 0; color: var(--muted); }
 .dockbtn.muted span { color: var(--pink); }
 .badge { position: absolute; top: 0; right: 6px; background: var(--pink); color: #fff; font-style: normal; font-size: 11px; min-width: 18px; height: 18px; border-radius: 9px; display: grid; place-items: center; padding: 0 4px; }
 
-.drawer { position: absolute; left: 0; right: 0; bottom: 0; height: 70%; background: var(--bg2); border-radius: 22px 22px 0 0; z-index: 30; display: flex; flex-direction: column; box-shadow: 0 -10px 40px #000a; animation: up .2s ease-out; padding-bottom: var(--safe-b); }
+/* Drawers open above the dock (--dock-h is measured in app.js) so dock buttons stay tappable. */
+.drawer { position: absolute; left: 0; right: 0; bottom: var(--dock-h, 64px); height: 64%; background: var(--bg2); border-radius: 22px 22px 0 0; z-index: 30; display: flex; flex-direction: column; box-shadow: 0 -10px 40px #000a; animation: up .2s ease-out; }
 .drawer.short { height: auto; max-height: 60%; }
 @keyframes up { from { transform: translateY(100%); } }
 .drawerhead { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--line); }
