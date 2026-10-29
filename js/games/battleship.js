@@ -81,7 +81,6 @@ export default {
 
     const render = () => {
       wrap.innerHTML = '';
-      const secs = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
       if (st.ph === 'place') {
         const ready = st.ready[me];
         status.innerHTML = api.spectator ? '👀 Admirals are hiding their fleets…'
@@ -101,9 +100,7 @@ export default {
       const myShots = st.shots[me] || {};
       const theirShots = st.shots[them.id] || {};
       const myTurn = st.turn === api.me && !st.done;
-      if (!st.done) {
-        status.innerHTML = myTurn ? `🎯 <b>Your shot!</b> Tap enemy waters · ⏱️ ${secs}s` : `${api.tag(st.turn)} is aiming… ⏱️ ${secs}s`;
-      }
+      battleStatus();
       const enemy = grid(myTurn ? 'armed' : '', (i) => { if (myTurn && !myShots[i]) api.send({ shot: i }); });
       const sunkThem = new Set((st.sunk[them.id] || []).flat());
       [...enemy.children].forEach((c, i) => {
@@ -126,7 +123,13 @@ export default {
         h('div', { class: 'bslabel' }, `${api.spectator ? api.name(me) : 'Your fleet'} — ${left(me)} ships left`), mine);
     };
 
-    api.every(1000, () => { if (st.ph === 'battle' && !st.done) render(); });
+    // Only the countdown ticks; rebuilding the grids every second would eat taps.
+    function battleStatus() {
+      if (st.ph !== 'battle' || st.done) return;
+      const secs = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      status.innerHTML = st.turn === api.me ? `🎯 <b>Your shot!</b> Tap enemy waters · ⏱️ ${secs}s` : `${api.tag(st.turn)} is aiming… ⏱️ ${secs}s`;
+    }
+    api.every(1000, battleStatus);
 
     api.onState((s) => {
       const prev = st;
@@ -169,7 +172,8 @@ export default {
 
     const push = (extra = {}) => api.broadcast({ ph, ready, turn, shots, sunk, last, ms: ph === 'battle' ? TURN_MS : 0, ...extra });
 
-    const fire = (by, idx) => {
+    // A hit earns another shot, unless the shot was fired by the AFK timer.
+    const fire = (by, idx, auto = false) => {
       if (shots[by][idx]) return;
       token++;
       const target = other(by);
@@ -184,7 +188,7 @@ export default {
         later(3500, () => api.finish([by], `Sent ${sunk[target].length} ships to Davy Jones 🏴‍☠️`));
         return;
       }
-      if (!ship) turn = other(by);
+      if (!ship || auto) turn = other(by);
       push();
       later(TURN_MS, autoFire);
     };
@@ -192,7 +196,7 @@ export default {
     const autoFire = () => {
       if (done || ph !== 'battle') return;
       const open = [...Array(N * N).keys()].filter((i) => !shots[turn][i]);
-      fire(turn, open[Math.floor(Math.random() * open.length)]);
+      fire(turn, open[Math.floor(Math.random() * open.length)], true);
     };
 
     api.onInput((from, d) => {

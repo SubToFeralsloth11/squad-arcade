@@ -38,7 +38,7 @@ export default {
     for (let c = 0; c < COLS; c++) {
       const col = h('div', { class: 'c4col' });
       for (let r = 0; r < ROWS; r++) { const cell = h('div', { class: 'c4cell' }); col.append(cell); cells[r * COLS + c] = cell; }
-      api.listen(col, 'pointerenter', () => col.classList.add('hover'));
+      api.listen(col, 'pointerenter', (e) => { if (e.pointerType === 'mouse') col.classList.add('hover'); });
       api.listen(col, 'pointerleave', () => col.classList.remove('hover'));
       api.listen(col, 'click', () => { if (myTurn()) api.send({ col: c }); });
       board.append(col);
