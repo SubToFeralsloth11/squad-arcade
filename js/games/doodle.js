@@ -26,6 +26,20 @@ const CHOOSE_MS = 15000;
 
 const norm = (s) => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
 
+// True when a run of whole words in the guess spells the answer: "its a hot dog" matches
+// "hot dog", but "cattle" does not match "cat".
+function containsAnswer(guess, w) {
+  const words = String(guess).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^a-z0-9]+/).filter(Boolean);
+  for (let i = 0; i < words.length; i++) {
+    let joined = '';
+    for (let j = i; j < words.length && joined.length < w.length; j++) {
+      joined += words[j];
+      if (joined === w) return true;
+    }
+  }
+  return false;
+}
+
 function lev(a, b) {
   if (Math.abs(a.length - b.length) > 2) return 9;
   const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
@@ -292,7 +306,7 @@ export default {
       const w = norm(t.word);
       if (!g) return;
       // "its a pizza" counts (and must not be broadcast, it would spoil the word).
-      if (g === w || (g.includes(w) && g.length <= w.length + 6)) {
+      if (g === w || containsAnswer(d.guess, w)) {
         const remain = Math.max(0, DRAW_MS - (Date.now() - t.startAt));
         const pts = 50 + Math.round((150 * remain) / DRAW_MS) + (t.guessed.size === 0 ? 30 : 0);
         t.guessed.add(from);
