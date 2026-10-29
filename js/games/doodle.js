@@ -145,7 +145,7 @@ export default {
       if (!drawer) return;
       const who = amDrawer() ? '✏️ You draw' : `✏️ ${api.tag(drawer)}`;
       const word = myWord ? `<span class="dd-mask">${api.esc(myWord.toUpperCase())}</span>` : `<span class="dd-mask">${api.esc(mask)}</span>`;
-      status.innerHTML = `${who} · ${word} · ⏱️ ${secs}s`;
+      status.innerHTML = deadline ? `${who} · ${word} · ⏱️ ${secs}s` : `${who} · ${word}`;
     };
     api.every(250, renderStatus);
 
@@ -291,7 +291,8 @@ export default {
       const g = norm(d.guess);
       const w = norm(t.word);
       if (!g) return;
-      if (g === w) {
+      // "its a pizza" counts (and must not be broadcast, it would spoil the word).
+      if (g === w || (g.includes(w) && g.length <= w.length + 6)) {
         const remain = Math.max(0, DRAW_MS - (Date.now() - t.startAt));
         const pts = 50 + Math.round((150 * remain) / DRAW_MS) + (t.guessed.size === 0 ? 30 : 0);
         t.guessed.add(from);
@@ -300,7 +301,7 @@ export default {
         api.broadcast({ k: 'feed', type: 'ok', from, pts, scores });
         api.sendTo(from, { k: 'word', word: t.word });
         if (t.guessed.size >= ids.length - 1) endTurn();
-      } else if (w.length > 3 && lev(g, w) <= (w.length > 6 ? 2 : 1)) {
+      } else if (g.includes(w) || (w.length > 3 && lev(g, w) <= (w.length > 6 ? 2 : 1))) {
         api.sendTo(from, { k: 'feed', type: 'close', text: d.guess.slice(0, 40) });
       } else {
         api.broadcast({ k: 'feed', type: 'guess', from, text: d.guess.slice(0, 40) });

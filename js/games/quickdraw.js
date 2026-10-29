@@ -142,14 +142,18 @@ export default {
 
     api.onInput((from, d) => {
       if (!d || d.round !== round || taps[from] != null) return;
-      if (d.early && (state === 'wait' || state === 'fake' || state === 'go')) {
+      // Times are measured on the tapper's phone (so lag doesn't decide rounds);
+      // anything under 90 ms is not a human reaction, so it counts as a false start.
+      const robot = typeof d.ms === 'number' && d.ms < 90;
+      if ((d.early || robot) && (state === 'wait' || state === 'fake' || state === 'go')) {
         token++;
         state = 'result';
         for (const id of ids) if (id !== from) scores[id]++;
-        api.broadcast({ phase: 'result', round, times: {}, early: from, msg: pick(EARLY), scores });
+        const msg = robot ? 'is tapping faster than humanly possible 🤖' : pick(EARLY);
+        api.broadcast({ phase: 'result', round, times: {}, early: from, msg, scores });
         if (!checkEnd()) later(2600, newRound);
       } else if (typeof d.ms === 'number' && state === 'go') {
-        taps[from] = Math.max(0, Math.min(5000, Math.round(d.ms)));
+        taps[from] = Math.min(5000, Math.round(d.ms));
         if (Object.keys(taps).length === ids.length) resolve();
       }
     });
