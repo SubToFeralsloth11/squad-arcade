@@ -47,6 +47,9 @@ record against every friend you've played. Saved in your browser.
   leaves, the room closes.
 - Voice chat is a mesh of WebRTC audio calls between everyone in the room (`js/voice.js`).
 - All sound effects are synthesised live with WebAudio (`js/sfx.js`).
+- `index.html` loads `js/bundle.js`, a plain (non-module) bundle of `js/`, so the game also
+  works by double-clicking `index.html` (multiplayer still needs internet). Opened from a
+  file, invite links point at the live site. After editing anything in `js/`, run `npm run build`.
 - Room codes are 5 characters (about 33 million combinations) on PeerJS' public
   broker, and anyone with the code can join while the room is open. Rooms only exist
   while the host's tab is open and hold at most 8 players.
@@ -77,6 +80,7 @@ and add it to `js/games/index.js`. `start` runs on every phone; branch on
 
 ## Run locally
 
-Any static file server works, e.g. `python3 -m http.server 8000`, then open
-http://localhost:8000. Open it in two tabs to play against yourself. Mic access
-needs `https://` or `localhost`.
+Double-click `index.html`, or serve the folder (e.g. `python3 -m http.server 8000`
+and open http://localhost:8000). Open it in two tabs to play against yourself.
+Some browsers (Safari, Firefox) block the mic for local files; use the live site
+or `localhost` for voice chat there.

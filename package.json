@@ -1,0 +1,7 @@
+{
+  "name": "squad-arcade",
+  "private": true,
+  "scripts": {
+    "build": "npx -y esbuild@0.24.0 js/app.js --bundle --format=iife --target=es2020 --outfile=js/bundle.js"
+  }
+}
